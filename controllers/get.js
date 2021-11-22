@@ -1,13 +1,11 @@
 var utilFunctions = require('../utils/functions');
 
 const get = (req, res) => {
-	// var ip = req.body.ip;
-	// var prefixLength = req.body.prefix;
-	// var octets = ip.split('.');
+	var ip = req.body.ip || '98.165.33.250';
+	var prefixLength = req.body.prefix || 24;
+	var octets = ip.split('.');
 
-	var utilfunction=new utilFunctions('98.165.33.250', 11, [98, 165, 33, 250])
-
-	// console.log(utilfunction.info());
+	var utilfunction=new utilFunctions(ip, prefixLength, octets)
 
 	res.json({ status: 200, msg: "success from get!", info: utilfunction.info()})
 }
