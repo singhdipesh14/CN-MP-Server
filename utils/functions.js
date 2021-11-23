@@ -86,6 +86,14 @@ class SubnetInfo {
         return endAddr.join('.');
     }
 
+    _range() {
+        var numberOfHosts = this._numberOfHosts();
+        if (numberOfHosts > 2)
+            return this._calculateStartAddress() + "-" + this._calculateEndAddress();
+        else
+            return "NA"
+    }
+
     _wildcardMask() {
         var subNetMask = this._netmask().split('.');
 
@@ -112,7 +120,7 @@ class SubnetInfo {
         var ipClass;
 
         var id = this.octets[0];
-        if (id < 128)
+        if (id >= 0 && id < 127)
             ipClass = 'Class A'
         else if (id >= 128 && id < 192)
             ipClass = 'Class B'
@@ -126,19 +134,48 @@ class SubnetInfo {
         return ipClass;
     }
 
+    _availableBlocks() {
+        var length = Math.pow(2, 32 - this.subnetBits);
+        var blocks = [];
+
+        console.log(length)
+
+        var startAdd = this._calculateStartAddress().split('.');
+        var endAddr = this._calculateStartAddress().split('.');
+
+        while (endAddr.join('.') != this._broadcastAddress()) {
+            var i = 0;
+            do {
+                if (parseInt(endAddr[3]) != 255)
+                    endAddr[3] = (parseInt(endAddr[3]) + 1).toString();
+                else {
+                    endAddr[2] = (parseInt(endAddr[2]) + 1).toString();
+                    endAddr[3] = "0";
+                }
+                console.log(endAddr)
+                i++;
+            }
+            while (i < length && endAddr.join('.') != this._broadcastAddress())
+            console.log(startAdd.join('.') + "-" + endAddr.join('.'))
+            blocks.push(startAdd.join('.') + "-" + endAddr.join('.'));
+            startAdd = endAddr;
+        }
+
+    }
+
     info() {
         return {
             ip: this.ip,
             subnetmask: this._netmask(),
-            usableAddressRange: this._calculateStartAddress() + "-" + this._calculateEndAddress(),
-            numberOfHosts: this._numberOfHosts(),
+            usableAddressRange: this._range(),
             netAddress: this._networkAddress(),
             broadcastAddress: this._broadcastAddress(),
-            maxHosts: this._numberOfHosts(),
+            totalHosts: this._numberOfHosts() + 2,
+            numberOfUsableHosts: this._numberOfHosts(),
             wildCardMask: this._wildcardMask(),
             ipClass: this._ipClass(),
             // ipType:,
-            //avaBlocks
+            avaBlocks: this._availableBlocks()
         };
     };
 
